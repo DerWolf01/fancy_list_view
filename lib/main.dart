@@ -1,7 +1,11 @@
-import 'dart:math';
+library;
 
-import 'package:fancy_list_view/src/fancy_list_view.dart';
+export 'package:fancy_list_view/src/fancy_list_view.dart';
+
+// Remove before publish
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:fancy_list_view/src/fancy_list_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -81,9 +85,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       body: FancyListView(
-          children: [1, 2, 3, 4, 5]
+          children: [1, 2]
               .map((e) => Container(
-                
                     color: Color((Random().nextDouble() * 0xFFFFFF).toInt())
                         .withOpacity(1.0),
                   ))
