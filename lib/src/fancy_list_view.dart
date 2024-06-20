@@ -207,10 +207,8 @@ class FancyListItem extends StatelessWidget {
                         height: height,
                         curve: Curves.easeOut,
                         duration: Duration(milliseconds: dragging ? 0 : 355),
-                        transform: Matrix4.translationValues(
-                            translationValues(context, progress, stops),
-                            baseY + changeY,
-                            0),
+                        transform:
+                            Matrix4.translationValues(0, baseY + changeY, 0),
                         decoration: BoxDecoration(color: color),
                         child: child,
                       ),
