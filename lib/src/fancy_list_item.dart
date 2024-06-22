@@ -98,12 +98,18 @@ class FancyListItem extends StatelessWidget {
     return;
   }
 
+  resetValues(BuildContext context) {
+    x.value = onEnter.x(context);
+    scale.value = onEnter.scale(context, 0.0);
+  }
+
   onLeaveTopBeginn(BuildContext context) {
     leavingStart = true;
   }
 
   onLeaveTopEnd(BuildContext context) {
     leavingStart = false;
+    resetValues(context);
   }
 
   onLeaveBottomBeginn(BuildContext context) {
@@ -112,6 +118,7 @@ class FancyListItem extends StatelessWidget {
 
   onLeaveBottomEnd(BuildContext context) {
     leavingEnd = false;
+    resetValues(context);
   }
 
   whileLeavingStart(BuildContext context) {
@@ -135,7 +142,7 @@ class FancyListItem extends StatelessWidget {
   whileLeavingEnd(BuildContext context) {
     var rawProgress = (startTillEnd.abs() / height);
     print(rawProgress);
-    if (rawProgress <= 0.01) {
+    if (rawProgress <= 0) {
       onLeaveTopEnd(context);
       return;
     }
