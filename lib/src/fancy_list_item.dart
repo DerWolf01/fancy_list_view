@@ -39,32 +39,23 @@ class FancyListItem extends StatelessWidget {
   late final double baseStartTillStart;
   final bool dragging;
   final ValueNotifier<double> scale = ValueNotifier(1.0);
-  bool leavingStart = false;
-  bool leavingEnd = false;
+  bool get leavingStart => !endOverStart && startOverStart;
+  bool get leavingEnd => endOverEnd && !startOverEnd;
+
+  bool get visible =>
+      !endOverEnd && !startOverEnd && !startOverStart && !endOverStart;
+
   double progress = 0.0;
   moveY(BuildContext context, double y) {
+    if (leavingStart) {
+      whileLeavingStart(context);
+    } else if (leavingEnd) {
+      whileLeavingEnd(context);
+    } else if (visible) {
+      resetValues(context);
+    }
+
     changeY.value += y;
-
-    // if (endY > 0) {
-    //   print("over the end $key");
-    // }
-
-    if (startOverStart) {
-      onLeaveTopBeginn(context);
-    } else {
-      onLeaveTopEnd(context);
-    }
-    if (endOverEnd) {
-      if (isLastItem) {
-        return;
-      }
-      onLeaveBottomBeginn(context);
-    } else {
-      onLeaveBottomEnd(context);
-    }
-    if (leavingEnd || leavingStart) {
-      whileLeaving(context);
-    }
   }
 
   moveYEnd(
@@ -103,21 +94,15 @@ class FancyListItem extends StatelessWidget {
     scale.value = onEnter.scale(context, 0.0);
   }
 
-  onLeaveTopBeginn(BuildContext context) {
-    leavingStart = true;
-  }
+  onLeaveTopBeginn(BuildContext context) {}
 
   onLeaveTopEnd(BuildContext context) {
-    leavingStart = false;
     resetValues(context);
   }
 
-  onLeaveBottomBeginn(BuildContext context) {
-    leavingEnd = true;
-  }
+  onLeaveBottomBeginn(BuildContext context) {}
 
   onLeaveBottomEnd(BuildContext context) {
-    leavingEnd = false;
     resetValues(context);
   }
 
