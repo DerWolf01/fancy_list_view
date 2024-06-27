@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:fancy_list_view/src/animation_stop.dart';
 import 'package:fancy_list_view/src/animation_stops.dart';
 import 'package:fancy_list_view/src/fancy_list_controller.dart';
@@ -42,7 +41,8 @@ class FancyListItem extends StatelessWidget {
   bool get leavingStart => !endOverStart && startOverStart;
   bool get leavingEnd => endOverEnd && !startOverEnd;
 
-  bool get visible =>
+  bool get visible => !startOverEnd && !endOverStart;
+  bool get insideBox =>
       !endOverEnd && !startOverEnd && !startOverStart && !endOverStart;
 
   double progress = 0.0;
@@ -51,37 +51,47 @@ class FancyListItem extends StatelessWidget {
       whileLeavingStart(context);
     } else if (leavingEnd) {
       whileLeavingEnd(context);
-    } else if (visible) {
+    } else if (insideBox) {
       resetValues(context);
     }
 
     changeY.value += y;
   }
 
+  setY(BuildContext context, double y) {
+    if (visible) {
+      resetValues(context);
+    }
+
+    changeY.value = y;
+  }
+
   moveYEnd(
     BuildContext context,
   ) {
-    if (isFirstItem && y > baseY.value) {
-      fancyListController.setY(0);
-      return;
+    if (isLastItem && endTillEnd > 0) {
+      fancyListController.setY(changeY.value + endTillEnd);
+      resetValues(context);
     }
-    if (isLastItem && endOverEnd) {
+    //  else if (isFirstItem && y > 0) {
+    //   fancyListController.setY(0 + height);
+    //   resetValues(context);
+    //   return;
+    // }
+    if (endOverEnd && isLastItem) {
+      resetValues(context);
       fancyListController.setY(-changeY.value * progress);
       return;
-    }
-    if (leavingEnd) {
+    } else if (leavingEnd) {
       return;
-    }
-    print("move end y --> $progress");
-    if (progress < 0.25) {
-      print("Nearer to inside");
+    } else if (progress < 0.75 || isLastItem && endOverEnd) {
       x.value = onEnter.x(context);
       scale.value = onEnter.scale(context, progress);
       fancyListController.setY(changeY.value + (height * progress));
 
       return;
     }
-    print("Nearer to outside");
+
     x.value = onLeave.x(context);
     scale.value = onLeave.scale(context, progress);
     fancyListController.setY(changeY.value - (height * progress));
@@ -115,27 +125,26 @@ class FancyListItem extends StatelessWidget {
     }
 
     var rawProgress = rawProgressNegative.abs();
-    print(rawProgress);
+
     progress = (rawProgress - 1).abs();
     scale.value = getScale(context, progress, AnimationStops(onEnter, onLeave));
     x.value = getX(context, progress, AnimationStops(onEnter, onLeave));
-    print(x.value);
-
-    print("while leaving ");
   }
 
   whileLeavingEnd(BuildContext context) {
+    if (isLastItem) {
+      print(endOverEnd);
+    }
     var rawProgress = (startTillEnd.abs() / height);
-    print(rawProgress);
-    if (rawProgress <= 0) {
+
+    if (rawProgress <= 0 || rawProgress > 1) {
       onLeaveTopEnd(context);
       return;
     }
     progress = (rawProgress - 1).abs();
     x.value = getX(context, progress, AnimationStops(onEnter, onLeave));
-    print(x.value);
+
     scale.value = getScale(context, progress, AnimationStops(onEnter, onLeave));
-    print("while leaving ");
   }
 
   whileLeaving(BuildContext context) {

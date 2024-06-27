@@ -85,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       body: FancyListView(
-          children: [1, 2, 3, 4, 5]
+          children: [1, 2, 3, 4, 5, 6, 7, 8, 9]
               .map((e) => Container(
                     color: Color((Random().nextDouble() * 0xFFFFFF).toInt())
                         .withOpacity(1.0),

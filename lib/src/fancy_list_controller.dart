@@ -68,7 +68,8 @@ class FancyListController {
   setY(double y) {
     changeY = y;
     for (var item in items) {
-      item.changeY.value = changeY;
+      item.setY(context, changeY);
+
       // print("moving ${item.key} - ${item.onScreen()}");
     }
   }
