@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:fancy_list_view/src/animation_stop.dart';
 import 'package:fancy_list_view/src/animation_stops.dart';
-import 'package:fancy_list_view/src/fancy_list_controller.dart';
+import 'package:fancy_list_view/src/controller/fancy_list_controller.dart';
 import 'package:flutter/material.dart';
 
 class FancyListItem extends StatelessWidget {
@@ -28,7 +28,11 @@ class FancyListItem extends StatelessWidget {
   bool get isFirstItem => index == 0;
   int index;
   increaseIndex() => index++;
-  decreaseIndex() => index--;
+  decreaseIndex() {
+    index--;
+    print("new index --> $index");
+  }
+
   bool animateOnEnter;
   bool animateOnTrigger;
   AnimationStop onEnter;

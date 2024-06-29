@@ -4,7 +4,7 @@ export 'package:fancy_list_view/src/fancy_list_view.dart';
 
 // Remove before publish
 import 'dart:math';
-import 'package:fancy_list_view/src/fancy_list_controller.dart';
+import 'package:fancy_list_view/src/controller/fancy_list_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:fancy_list_view/src/fancy_list_view.dart';
 
@@ -81,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
             FloatingActionButton(
               backgroundColor: Colors.green,
               onPressed: () {
-                controller.addItem(Container(
+                controller.insert(Container(
                   color: Colors.green,
                 ));
               },
@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
             FloatingActionButton(
               backgroundColor: Colors.blue,
               onPressed: () {
-                controller.addItemAt(
+                controller.insertAt(
                     Container(
                       color: Colors.blue,
                     ),
@@ -101,7 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
             FloatingActionButton(
               backgroundColor: Colors.red,
               onPressed: () {
-                controller.removeItemAt(3);
+                controller.removeAt(3);
               },
               child: const Icon(Icons.delete_rounded),
             ),

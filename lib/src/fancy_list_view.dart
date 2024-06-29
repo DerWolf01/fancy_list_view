@@ -1,4 +1,4 @@
-import 'package:fancy_list_view/src/fancy_list_controller.dart';
+import 'package:fancy_list_view/src/controller/fancy_list_controller.dart';
 import 'package:fancy_list_view/src/fancy_list_item.dart';
 import 'package:flutter/material.dart';
 // TODO
@@ -111,7 +111,9 @@ class FancyListStackState extends State<FancyListStack> {
 
     controller.createOnRemoveListener(
       (index) {
-        items!.removeAt(index);
+        items!.removeWhere(
+          (element) => element.index == index,
+        );
       },
     );
   }
