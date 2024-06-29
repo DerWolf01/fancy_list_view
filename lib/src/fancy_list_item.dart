@@ -12,32 +12,43 @@ class FancyListItem extends StatelessWidget {
       required this.height,
       required this.listHeight,
       required double y,
+      double? initialChangeY,
       required this.isLastItem,
       required this.index,
       required this.fancyListController,
-      required this.dragging})
-      : baseY = ValueNotifier(y);
+      required this.dragging,
+      bool? animateOnEnter,
+      bool? animateOnTrigger})
+      : baseY = ValueNotifier(y),
+        animateOnEnter = animateOnEnter ?? false,
+        animateOnTrigger = animateOnTrigger ?? false,
+        changeY = ValueNotifier(initialChangeY ?? 0.0);
   final Widget child;
   bool isLastItem;
   bool get isFirstItem => index == 0;
   int index;
+  increaseIndex() => index++;
+  decreaseIndex() => index--;
+  bool animateOnEnter;
+  bool animateOnTrigger;
   AnimationStop onEnter;
 
   AnimationStop onLeave;
   final double listHeight;
   final double height;
   final ValueNotifier<double> baseY;
-  late final ValueNotifier<double> x;
+  ValueNotifier<double> x = ValueNotifier(0.0);
   final FancyListController fancyListController;
-  final ValueNotifier<double> changeY = ValueNotifier(0.0);
+  final ValueNotifier<double> changeY;
   final Color color =
       Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
-  late final double baseEndTillEnd;
-  late final double baseStartTillEnd;
-  late final double baseEndTillStart;
-  late final double baseStartTillStart;
+  late double baseEndTillEnd;
+  late double baseStartTillEnd;
+  late double baseEndTillStart;
+  late double baseStartTillStart;
   final bool dragging;
   final ValueNotifier<double> scale = ValueNotifier(1.0);
+
   bool get leavingStart => !endOverStart && startOverStart;
   bool get leavingEnd => endOverEnd && !startOverEnd;
 
@@ -231,6 +242,21 @@ class FancyListItem extends StatelessWidget {
     return true;
   }
 
+  enter(BuildContext context) {
+    Future.delayed(
+      Duration(milliseconds: (355 / 2).toInt()),
+      () {
+        x.value = onEnter.x(context);
+        scale.value = onEnter.scale(context, 1.0);
+      },
+    );
+  }
+
+  leave(BuildContext context) {
+    x.value = onLeave.x(context);
+    scale.value = onEnter.scale(context, 1.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     baseEndTillEnd = baseY.value + height - listHeight;
@@ -238,18 +264,36 @@ class FancyListItem extends StatelessWidget {
     baseStartTillStart = baseY.value + listHeight;
     baseStartTillEnd = baseY.value - listHeight;
     x = ValueNotifier(onEnter.x(context));
+    if (animateOnEnter) {
+      x.value = onLeave.x(context);
+      scale.value = onEnter.scale(context, 0.0);
+      WidgetsBinding.instance.addPostFrameCallback(
+        (timeStamp) {
+          Future.delayed(
+            Duration(milliseconds: (355 / 2).toInt()),
+            () {
+              x.value = onEnter.x(context);
+              scale.value = onEnter.scale(context, 1.0);
+              animateOnEnter = false;
+            },
+          );
+        },
+      );
+    } else if (animateOnTrigger) {
+      resetValues(context);
+    }
     return ValueListenableBuilder(
         valueListenable: scale,
-        builder: (context, scale, child) => ValueListenableBuilder(
-            valueListenable: baseY,
-            builder: (context, baseY, child) => ValueListenableBuilder(
+        builder: (context, scale, child) => AnimatedScale(
+            scale: scale,
+            duration: Duration(milliseconds: dragging ? 0 : 355),
+            child: ValueListenableBuilder(
                 valueListenable: changeY,
                 builder: (context, changeY, child) => ValueListenableBuilder(
                     valueListenable: x,
-                    builder: (context, x, child) => AnimatedScale(
-                          scale: scale,
-                          duration: Duration(milliseconds: dragging ? 0 : 355),
-                          child: AnimatedContainer(
+                    builder: (context, x, child) => ValueListenableBuilder(
+                          valueListenable: baseY,
+                          builder: (context, baseY, child) => AnimatedContainer(
                             height: height,
                             curve: Curves.easeOut,
                             duration:
@@ -257,7 +301,7 @@ class FancyListItem extends StatelessWidget {
                             transform: Matrix4.translationValues(
                                 x, baseY + changeY, 0),
                             decoration: BoxDecoration(color: color),
-                            child: child,
+                            child: this.child,
                           ),
                         )))));
   }

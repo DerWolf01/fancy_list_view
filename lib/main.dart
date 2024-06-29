@@ -4,6 +4,7 @@ export 'package:fancy_list_view/src/fancy_list_view.dart';
 
 // Remove before publish
 import 'dart:math';
+import 'package:fancy_list_view/src/fancy_list_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:fancy_list_view/src/fancy_list_view.dart';
 
@@ -11,9 +12,14 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<StatefulWidget> createState() => MyAppState();
+}
+
+class MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -62,37 +68,57 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    final FancyListController controller = FancyListController();
+
     return Scaffold(
-      body: FancyListView(
-          children: [1, 2, 3, 4, 5, 6, 7, 8, 9]
-              .map((e) => Container(
-                    color: Color((Random().nextDouble() * 0xFFFFFF).toInt())
-                        .withOpacity(1.0),
-                  ))
-              .toList(),
-          height: MediaQuery.sizeOf(context).height,
-          itemHeight: 155),
+      body: Column(children: [
+        Container(
+          height: 155,
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            FloatingActionButton(
+              backgroundColor: Colors.green,
+              onPressed: () {
+                controller.addItem(Container(
+                  color: Colors.green,
+                ));
+              },
+              child: const Icon(Icons.add),
+            ),
+            FloatingActionButton(
+              backgroundColor: Colors.blue,
+              onPressed: () {
+                controller.addItemAt(
+                    Container(
+                      color: Colors.blue,
+                    ),
+                    1);
+              },
+              child: const Icon(Icons.create_new_folder_rounded),
+            ),
+            FloatingActionButton(
+              backgroundColor: Colors.red,
+              onPressed: () {
+                controller.removeItemAt(3);
+              },
+              child: const Icon(Icons.delete_rounded),
+            ),
+          ]),
+        ),
+        FancyListView(
+            controller: controller,
+            clipBehavior: Clip.antiAlias,
+            height: MediaQuery.sizeOf(context).height,
+            itemHeight: 155,
+            children: [1, 2, 3, 4, 5]
+                .map((e) => Container(
+                      color: Color((Random().nextDouble() * 0xFFFFFF).toInt())
+                          .withOpacity(1.0),
+                    ))
+                .toList())
+      ]),
     );
   }
 }
