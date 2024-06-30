@@ -1,11 +1,28 @@
 import 'package:fancy_list_view/src/controller/fancy_list_controller.dart';
-import 'package:fancy_list_view/src/fancy_list_item.dart';
-import 'package:flutter/material.dart';
-// TODO
 
+import 'package:fancy_list_view/src/view/view_stack.dart';
+import 'package:flutter/material.dart';
+
+// TODO
 // Add limits for list reaching end and start
-// Implement functionality to add items add prefered index
-// Implement functionality to remove items add prefered index
+
+// Add different limit animations for end and start
+// item gaps satggering up
+// list just going with the touch but moving back on end
+// list just stayin where it is
+
+// Fix scrollTo aniomation when removing item
+
+// Fix magentic scroll
+
+// Add staggered scroll
+
+// structure on scroll and lifecycle hook animation implementation
+// Add immediate animated enter and leave for items
+// add onAdd and onRemove animation
+// Add Dismissible implementation
+
+// Structure code and ensure code quality
 
 class FancyListView extends StatefulWidget {
   FancyListView(
@@ -43,20 +60,9 @@ class FancyListViewState extends State<FancyListView> {
 
   Clip? get clipBehavior => widget.clipBehavior;
   BoxDecoration? get decoration => widget.decoration;
-  bool initialized = false;
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
-    // print(items != null ? "items initialized" : "items not initialized");
-
-    // if (!initialized) {
-    //   items ??= controller.onInit(context, widget, height);
-    //   initialized = true;
-    // }
     return Container(
         height: height,
         clipBehavior: clipBehavior ?? Clip.none,
@@ -73,59 +79,4 @@ class FancyListViewState extends State<FancyListView> {
                 valueListenable: _dragging,
                 builder: (context, dragging, c) => FancyListStack(widget))));
   }
-}
-
-class FancyListStack extends StatefulWidget {
-  FancyListStack(
-    this.view,
-  );
-
-  final FancyListView view;
-  @override
-  final GlobalKey<FancyListStackState> key = GlobalKey();
-  @override
-  State<StatefulWidget> createState() => FancyListStackState();
-}
-
-class FancyListStackState extends State<FancyListStack> {
-  List<FancyListItem>? items;
-
-  final GlobalKey<FancyListStackState> key = GlobalKey();
-  @override
-  void initState() {
-    super.initState();
-
-    items = widget.view.controller
-        .onInit(widget.view, widget.key, widget.view.height);
-    controller.createOnAddListener(
-      (value) async {
-        print("new item: $value: {height: ${value?.height}, y: ${value?.y}}");
-        if (value == null) {
-          return;
-        }
-        setState(() {
-          items = controller.items;
-        });
-      },
-    );
-
-    controller.createOnRemoveListener(
-      (index) {
-        items!.removeWhere(
-          (element) => element.index == index,
-        );
-      },
-    );
-  }
-
-  FancyListController get controller => widget.view.controller;
-  @override
-  Widget build(BuildContext context) {
-    return Stack(children: items!);
-  }
-}
-
-class MediaQueryHelper {
-  static heightOf(BuildContext context) => MediaQuery.sizeOf(context).height;
-  static widthOf(BuildContext context) => MediaQuery.sizeOf(context).height;
 }

@@ -1,12 +1,12 @@
 library;
 
-export 'package:fancy_list_view/src/fancy_list_view.dart';
+export 'package:fancy_list_view/src/view/fancy_list_view.dart';
 
 // Remove before publish
 import 'dart:math';
 import 'package:fancy_list_view/src/controller/fancy_list_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:fancy_list_view/src/fancy_list_view.dart';
+import 'package:fancy_list_view/src/view/fancy_list_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -74,39 +74,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       body: Column(children: [
-        Container(
-          height: 155,
-          child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-            FloatingActionButton(
-              backgroundColor: Colors.green,
-              onPressed: () {
-                controller.insert(Container(
-                  color: Colors.green,
-                ));
-              },
-              child: const Icon(Icons.add),
-            ),
-            FloatingActionButton(
-              backgroundColor: Colors.blue,
-              onPressed: () {
-                controller.insertAt(
-                    Container(
-                      color: Colors.blue,
-                    ),
-                    1);
-              },
-              child: const Icon(Icons.create_new_folder_rounded),
-            ),
-            FloatingActionButton(
-              backgroundColor: Colors.red,
-              onPressed: () {
-                controller.removeAt(3);
-              },
-              child: const Icon(Icons.delete_rounded),
-            ),
-          ]),
-        ),
         FancyListView(
             controller: controller,
             clipBehavior: Clip.antiAlias,

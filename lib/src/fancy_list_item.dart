@@ -132,26 +132,33 @@ class FancyListItem extends StatelessWidget {
   }
 
   whileLeavingStart(BuildContext context) {
-    var rawProgressNegative = (endTillStart / height);
+    print(endTillStart);
+    var rawProgress = ((endTillStart / height) - 1).abs();
+    // print(rawProgress);
 
-    if (rawProgressNegative >= 0) {
-      onLeaveTopEnd(context);
+    if (rawProgress <= 0 || rawProgress > 1) {
+      onLeaveBottomEnd(context);
       return;
     }
 
-    var rawProgress = rawProgressNegative.abs();
+    progress = rawProgress;
 
-    progress = (rawProgress - 1).abs();
-    scale.value = getScale(context, progress, AnimationStops(onEnter, onLeave));
+    print(rawProgress);
+
+    // print(progress);
     x.value = getX(context, progress, AnimationStops(onEnter, onLeave));
+
+    scale.value = getScale(context, progress, AnimationStops(onEnter, onLeave));
   }
 
   whileLeavingEnd(BuildContext context) {
     if (isLastItem) {
       print(endOverEnd);
     }
-    var rawProgress = (startTillEnd.abs() / height);
-
+    var rawProgress = (startTillEnd / height);
+    if (isLastItem) {
+      print(rawProgress);
+    }
     if (rawProgress <= 0 || rawProgress > 1) {
       onLeaveTopEnd(context);
       return;
@@ -217,9 +224,9 @@ class FancyListItem extends StatelessWidget {
   }
 
 // item start to list start
-  bool get endOverStart => endTillStart > 0;
+  bool get endOverStart => endTillStart < 0;
   double get endTillStartP => endTillStart / baseEndTillStart;
-  double get endTillStart => 0 - endY;
+  double get endTillStart => 0 + endY;
 // item start to list start
   bool get startOverStart => startTillStart > 0;
   double get startTillStartP => startTillStart / baseStartTillStart;
@@ -248,7 +255,7 @@ class FancyListItem extends StatelessWidget {
 
   enter(BuildContext context) {
     Future.delayed(
-      Duration(milliseconds: (355 / 2).toInt()),
+      const Duration(milliseconds: 355 ~/ 2),
       () {
         x.value = onEnter.x(context);
         scale.value = onEnter.scale(context, 1.0);
@@ -287,26 +294,24 @@ class FancyListItem extends StatelessWidget {
       resetValues(context);
     }
     return ValueListenableBuilder(
-        valueListenable: scale,
-        builder: (context, scale, child) => AnimatedScale(
-            scale: scale,
-            duration: Duration(milliseconds: dragging ? 0 : 355),
-            child: ValueListenableBuilder(
-                valueListenable: changeY,
-                builder: (context, changeY, child) => ValueListenableBuilder(
-                    valueListenable: x,
-                    builder: (context, x, child) => ValueListenableBuilder(
-                          valueListenable: baseY,
-                          builder: (context, baseY, child) => AnimatedContainer(
-                            height: height,
-                            curve: Curves.easeOut,
-                            duration:
-                                Duration(milliseconds: dragging ? 0 : 355),
-                            transform: Matrix4.translationValues(
-                                x, baseY + changeY, 0),
-                            decoration: BoxDecoration(color: color),
-                            child: this.child,
-                          ),
-                        )))));
+        valueListenable: changeY,
+        builder: (context, changeY, child) => ValueListenableBuilder(
+            valueListenable: x,
+            builder: (context, x, child) => ValueListenableBuilder(
+                valueListenable: baseY,
+                builder: (context, baseY, child) => AnimatedContainer(
+                    height: height,
+                    curve: Curves.easeOut,
+                    duration: Duration(milliseconds: dragging ? 0 : 355),
+                    transform: Matrix4.translationValues(x, baseY + changeY, 0),
+                    decoration: BoxDecoration(color: color),
+                    child: ValueListenableBuilder(
+                      valueListenable: scale,
+                      builder: (context, scale, child) => AnimatedScale(
+                        scale: scale,
+                        duration: Duration(milliseconds: dragging ? 0 : 355),
+                        child: this.child,
+                      ),
+                    )))));
   }
 }
