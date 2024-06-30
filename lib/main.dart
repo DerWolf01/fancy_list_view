@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
             clipBehavior: Clip.antiAlias,
             height: MediaQuery.sizeOf(context).height,
             itemHeight: 155,
-            children: [1, 2, 3, 4, 5]
+            children: [1, 2, 3, 4, 5, 7, 8, 9]
                 .map((e) => Container(
                       color: Color((Random().nextDouble() * 0xFFFFFF).toInt())
                           .withOpacity(1.0),

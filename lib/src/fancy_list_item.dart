@@ -62,6 +62,18 @@ class FancyListItem extends StatelessWidget {
 
   double progress = 0.0;
   moveY(BuildContext context, double y) {
+    if (isFirstItem && startTillStart > 0) {
+      fancyListController.setY(0);
+
+      return;
+    }
+    if (isLastItem && endTillEnd > 0) {
+      print(endTillEnd);
+      fancyListController.setY(changeY.value + endTillEnd);
+      resetValues(context);
+      return;
+    }
+
     if (leavingStart) {
       whileLeavingStart(context);
     } else if (leavingEnd) {
@@ -84,19 +96,13 @@ class FancyListItem extends StatelessWidget {
   moveYEnd(
     BuildContext context,
   ) {
-    if (isLastItem && endTillEnd > 0) {
+    print(startTillStart);
+    if (isFirstItem && startTillStart > 0) {
+      fancyListController.setY(0 + height / 2);
+      resetValues(context);
+    } else if (isLastItem && endTillEnd > 0) {
       fancyListController.setY(changeY.value + endTillEnd);
       resetValues(context);
-    }
-    //  else if (isFirstItem && y > 0) {
-    //   fancyListController.setY(0 + height);
-    //   resetValues(context);
-    //   return;
-    // }
-    if (endOverEnd && isLastItem) {
-      resetValues(context);
-      fancyListController.setY(-changeY.value * progress);
-      return;
     } else if (leavingEnd) {
       return;
     } else if (progress < 0.75 || isLastItem && endOverEnd) {
@@ -132,7 +138,6 @@ class FancyListItem extends StatelessWidget {
   }
 
   whileLeavingStart(BuildContext context) {
-    print(endTillStart);
     var rawProgress = ((endTillStart / height) - 1).abs();
     // print(rawProgress);
 
@@ -228,9 +233,9 @@ class FancyListItem extends StatelessWidget {
   double get endTillStartP => endTillStart / baseEndTillStart;
   double get endTillStart => 0 + endY;
 // item start to list start
-  bool get startOverStart => startTillStart > 0;
+  bool get startOverStart => startTillStart < 0;
   double get startTillStartP => startTillStart / baseStartTillStart;
-  double get startTillStart => 0 - startY;
+  double get startTillStart => 0 + startY;
 // item start to list end
   bool get startOverEnd => startTillEnd < 0;
   double get startTillEndP => startTillEnd / baseStartTillEnd;

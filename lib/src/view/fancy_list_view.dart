@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 // TODO
 // Add limits for list reaching end and start
 
-// Add different limit animations for end and start
+// Add different limit animations for end and start ( ILimitReachedAnimation? )
 // item gaps satggering up
 // list just going with the touch but moving back on end
 // list just stayin where it is
@@ -23,7 +23,7 @@ import 'package:flutter/material.dart';
 // Add Dismissible implementation
 
 // Structure code and ensure code quality
-
+// make list compatible for y and x axis
 class FancyListView extends StatefulWidget {
   FancyListView(
       {required this.children,
