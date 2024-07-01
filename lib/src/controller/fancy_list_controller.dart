@@ -35,7 +35,7 @@ class FancyListController
   late FancyListView view;
 
   double changeY = 0.0;
-  late final GlobalKey<FancyListStackState>? globalKey;
+  GlobalKey<FancyListStackState>? globalKey;
   BuildContext get context => globalKey!.currentState!.context;
 
   bool isOverscrolling = false;
