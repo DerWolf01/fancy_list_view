@@ -283,6 +283,7 @@ class FancyListItem extends StatelessWidget {
             builder: (context, x, child) => ValueListenableBuilder(
                 valueListenable: baseY,
                 builder: (context, baseY, child) => AnimatedContainer(
+                    width: double.infinity,
                     height: height,
                     curve: Curves.easeOut,
                     duration: Duration(milliseconds: dragging ? 0 : 355),
