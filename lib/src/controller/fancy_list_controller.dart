@@ -4,6 +4,7 @@ import 'package:advanced_change_notifier/advanced_change_notifier.dart';
 import 'package:fancy_list_view/main.dart';
 import 'package:fancy_list_view/src/animation_stop.dart';
 import 'package:fancy_list_view/src/controller/controller_items_mixin.dart';
+import 'package:fancy_list_view/src/controller/limit/limit_interface.dart';
 import 'package:fancy_list_view/src/controller/types.dart';
 import 'package:fancy_list_view/src/fancy_list_item.dart';
 import 'package:fancy_list_view/src/list_widget_change_notifier/list_widget_change_notifier.dart';
@@ -15,6 +16,20 @@ class FancyListController
     with
         ListWidgetChangeNotifier<FancyListItem>,
         FancyListControllerItemsMixin {
+  FancyListController._internal({OverscrollHandler? overscrollHandler}) {
+    this.overscrollHandler =
+        overscrollHandler ?? OverscrollStandartHandler(controller: this);
+  }
+
+  static FancyListController? _instance;
+
+  factory FancyListController({OverscrollHandler? overscrollHandler}) {
+    _instance ??=
+        FancyListController._internal(overscrollHandler: overscrollHandler);
+    return _instance!;
+  }
+  late final OverscrollHandler overscrollHandler;
+
   double listContentHeight = 0.0;
   double listHeight = .0;
   late FancyListView view;
@@ -22,6 +37,11 @@ class FancyListController
   double changeY = 0.0;
   late final GlobalKey<FancyListStackState> globalKey;
   BuildContext get context => globalKey.currentState!.context;
+
+  bool isOverscrolling = false;
+
+  overscrolling() => isOverscrolling = true;
+  notOverscrolling() => isOverscrolling = true;
 
   FancyListItem mockItem(int index) => (() => FancyListItem(
       Text(Random().nextDouble().toString()),
@@ -66,9 +86,6 @@ class FancyListController
     }
     items.add(newItem);
 
-    print(items.map(
-      (e) => e.index,
-    ));
     scrollTo(newItem.index);
     notifyAddListeners(newItem);
   }
@@ -87,9 +104,6 @@ class FancyListController
     }
     items.add(newItem);
 
-    print(items.map(
-      (e) => e.index,
-    ));
     scrollTo(newItem.index);
 
     notifyAddListeners(newItem);
@@ -110,10 +124,6 @@ class FancyListController
       item.baseY.value -= toRemove.height + gap;
     }
 
-    print(items.map(
-      (e) => e.index,
-    ));
-
     notifyRemoveListeners(index);
   }
 
@@ -127,15 +137,31 @@ class FancyListController
   }
 
   void moveY(double y) {
+    if (overscrollHandler.isOverscrollingTop) {
+      overscrollHandler.onOverscrollTop(y);
+      return;
+    }
+    if (overscrollHandler.isOverscrollingBottom) {
+      print("overscrolling bottom");
+
+      overscrollHandler.onOverscrollBottom(y);
+      return;
+    }
     changeY += y;
     for (var item in items) {
-      print(item.index);
       item.moveY(context, y);
-      // print("moving ${item.key} - ${item.onScreen()}");
+      print("moving ${item.index} - ${item.onScreen()}");
     }
   }
 
   void endY() {
+    if (overscrollHandler.isOverscrollingTop) {
+      overscrollHandler.overscrollingTopStop();
+      return;
+    } else if (overscrollHandler.isOverscrollingBottom) {
+      overscrollHandler.overscrollingBottomStop();
+      return;
+    }
     for (var item in items) {
       item.moveYEnd(context);
       // print("moving ${item.key} - ${item.onScreen()}");
@@ -166,7 +192,7 @@ class FancyListController
         ),
         onLeave: AnimationStop(
           key: const Key("onLeave"),
-          x: (context) => 0,
+          x: (context) => 355,
           scale: (c, progress) => 1 - progress * 1,
         ),
         listHeight: height,
@@ -189,15 +215,17 @@ class FancyListController
   setY(double y) {
     changeY = y;
     for (var item in items) {
-      item.setY(context, changeY);
+      item.moveY(context, item.changeY.value - changeY);
     }
   }
 
-  FancyListController._internal();
-  static FancyListController? _instance;
+  FancyListItem get lastItem => items.firstWhere(
+        (element) => element.index == items.length - 1,
+      );
 
-  factory FancyListController() {
-    _instance ??= FancyListController._internal();
-    return _instance!;
-  }
+  FancyListItem get firstItem => items
+      .where(
+        (element) => element.isFirstItem,
+      )
+      .first;
 }

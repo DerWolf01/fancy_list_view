@@ -4,6 +4,7 @@ import 'package:fancy_list_view/src/animation_stops.dart';
 import 'package:fancy_list_view/src/controller/fancy_list_controller.dart';
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class FancyListItem extends StatelessWidget {
   FancyListItem(this.child,
       {super.key,
@@ -23,6 +24,7 @@ class FancyListItem extends StatelessWidget {
         animateOnEnter = animateOnEnter ?? false,
         animateOnTrigger = animateOnTrigger ?? false,
         changeY = ValueNotifier(initialChangeY ?? 0.0);
+
   final Widget child;
   bool isLastItem;
   bool get isFirstItem => index == 0;
@@ -30,7 +32,6 @@ class FancyListItem extends StatelessWidget {
   increaseIndex() => index++;
   decreaseIndex() {
     index--;
-    print("new index --> $index");
   }
 
   bool animateOnEnter;
@@ -61,16 +62,23 @@ class FancyListItem extends StatelessWidget {
       !endOverEnd && !startOverEnd && !startOverStart && !endOverStart;
 
   double progress = 0.0;
-  moveY(BuildContext context, double y) {
-    if (isFirstItem && startTillStart > 0) {
-      fancyListController.setY(0);
 
+  moveY(BuildContext context, double y, {bool animated = true}) {
+    if (isLastItem) {
+      print(futureEndTillEnd(y));
+    }
+    if (animated == false) {
+      changeY.value += y;
+      print("not animated");
       return;
     }
-    if (isLastItem && endTillEnd > 0) {
-      print(endTillEnd);
-      fancyListController.setY(changeY.value + endTillEnd);
-      resetValues(context);
+    if (isFirstItem && futureStartTillStart(y) > 0) {
+      fancyListController.overscrollHandler.overscrollingTop();
+      return;
+    }
+    if (isLastItem && futureEndTillEnd(y) > 0) {
+      fancyListController.overscrollHandler.overscrollingBottom();
+
       return;
     }
 
@@ -96,26 +104,17 @@ class FancyListItem extends StatelessWidget {
   moveYEnd(
     BuildContext context,
   ) {
-    print(startTillStart);
-    if (isFirstItem && startTillStart > 0) {
-      fancyListController.setY(0 + height / 2);
-      resetValues(context);
-    } else if (isLastItem && endTillEnd > 0) {
-      fancyListController.setY(changeY.value + endTillEnd);
-      resetValues(context);
-    } else if (leavingEnd) {
-      return;
-    } else if (progress < 0.75 || isLastItem && endOverEnd) {
+    if (progress > 0.25) {
       x.value = onEnter.x(context);
       scale.value = onEnter.scale(context, progress);
-      fancyListController.setY(changeY.value + (height * progress));
+      fancyListController.moveY(-height / 2 * progress);
 
       return;
     }
 
     x.value = onLeave.x(context);
     scale.value = onLeave.scale(context, progress);
-    fancyListController.setY(changeY.value - (height * progress));
+    fancyListController.moveY((height * progress));
 
     return;
   }
@@ -228,27 +227,6 @@ class FancyListItem extends StatelessWidget {
     return fScale - (fScale - sScale) * progress;
   }
 
-// item start to list start
-  bool get endOverStart => endTillStart < 0;
-  double get endTillStartP => endTillStart / baseEndTillStart;
-  double get endTillStart => 0 + endY;
-// item start to list start
-  bool get startOverStart => startTillStart < 0;
-  double get startTillStartP => startTillStart / baseStartTillStart;
-  double get startTillStart => 0 + startY;
-// item start to list end
-  bool get startOverEnd => startTillEnd < 0;
-  double get startTillEndP => startTillEnd / baseStartTillEnd;
-  double get startTillEnd => listHeight - startY;
-
-// item end to list end
-  bool get endOverEnd => endTillEnd < 0;
-  double get endTillEndP => endTillEnd / baseEndTillEnd;
-  double get endTillEnd => listHeight - endY;
-
-  double get startY => y;
-  double get endY => y + height;
-  double get y => (changeY.value) + baseY.value;
   bool onScreen() {
     if (changeY.value + baseY.value + height <= listHeight) {
       return false;
@@ -309,7 +287,6 @@ class FancyListItem extends StatelessWidget {
                     curve: Curves.easeOut,
                     duration: Duration(milliseconds: dragging ? 0 : 355),
                     transform: Matrix4.translationValues(x, baseY + changeY, 0),
-                    decoration: BoxDecoration(color: color),
                     child: ValueListenableBuilder(
                       valueListenable: scale,
                       builder: (context, scale, child) => AnimatedScale(
@@ -319,4 +296,29 @@ class FancyListItem extends StatelessWidget {
                       ),
                     )))));
   }
+
+// item start to list start
+  bool get endOverStart => endTillStart < 0;
+  double get endTillStartP => endTillStart / baseEndTillStart;
+  double get endTillStart => 0 + endY;
+// item start to list start
+  bool get startOverStart => startTillStart < 0;
+  double get startTillStartP => startTillStart / baseStartTillStart;
+  double get startTillStart => 0 + startY;
+// item start to list end
+  bool get startOverEnd => startTillEnd < 0;
+  double get startTillEndP => startTillEnd / baseStartTillEnd;
+  double get startTillEnd => listHeight - startY;
+
+// item end to list end
+  bool get endOverEnd => endTillEnd < 0;
+  double get endTillEndP => endTillEnd / baseEndTillEnd;
+  double get endTillEnd => listHeight - endY;
+
+  double get startY => y;
+  double get endY => y + height;
+  double get y => (changeY.value) + baseY.value;
+
+  double futureEndTillEnd(double withY) => listHeight - (y + height + withY);
+  double futureStartTillStart(double withY) => startY + withY;
 }

@@ -4,7 +4,6 @@ import 'package:fancy_list_view/src/view/view_stack.dart';
 import 'package:flutter/material.dart';
 
 // TODO
-// Add limits for list reaching end and start
 
 // Add different limit animations for end and start ( ILimitReachedAnimation? )
 // item gaps satggering up
