@@ -35,8 +35,8 @@ class FancyListController
   late FancyListView view;
 
   double changeY = 0.0;
-  late final GlobalKey<FancyListStackState> globalKey;
-  BuildContext get context => globalKey.currentState!.context;
+  GlobalKey<FancyListStackState>? globalKey;
+  BuildContext get context => globalKey!.currentState!.context;
 
   bool isOverscrolling = false;
 
@@ -170,9 +170,8 @@ class FancyListController
 
   Items onInit(FancyListView view, GlobalKey<FancyListStackState> globalKey,
       double height) {
-    if (this.globalKey! is GlobalKey<FancyListStackState>) {
-      this.globalKey = globalKey;
-    }
+    this.globalKey = globalKey;
+
     listContentHeight = view.children.length * view.itemHeight;
 
     this.view = view;
