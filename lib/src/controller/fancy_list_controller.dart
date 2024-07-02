@@ -78,6 +78,14 @@ class FancyListController
     }
   }
 
+  scrollToStart() {
+    setY(0);
+  }
+
+  scrollToEnd() {
+    setY(lastItem.endTillEnd);
+  }
+
   void insert(Widget item) {
     var newItem = mockItem(0);
     for (var current in items) {
