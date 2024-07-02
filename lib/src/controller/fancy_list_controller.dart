@@ -83,7 +83,7 @@ class FancyListController
   }
 
   scrollToEnd() {
-    setY(lastItem.endTillEnd);
+    setY(-lastItem.endTillEnd);
   }
 
   void insert(Widget item) {
