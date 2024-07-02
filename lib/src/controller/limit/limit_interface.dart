@@ -6,8 +6,15 @@ abstract class OverscrollHandler {
   bool isOverscrollingTop = false;
   bool isOverscrollingBottom = false;
 
-  overscrollingTop() => isOverscrollingTop = true;
-  overscrollingBottom() => isOverscrollingBottom = true;
+  overscrollingTop() {
+    isOverscrollingTop = true;
+    onOverscrollTopStart();
+  }
+
+  overscrollingBottom() {
+    isOverscrollingBottom = true;
+    onOverscrollBottomStart();
+  }
 
   overscrollingTopStop() {
     onOverscrollTopEnd();
@@ -21,9 +28,11 @@ abstract class OverscrollHandler {
 
   FancyListController controller;
 
+  onOverscrollTopStart();
   onOverscrollTop(double overscroll);
   onOverscrollTopEnd();
 
+  onOverscrollBottomStart();
   onOverscrollBottom(double overscroll);
   onOverscrollBottomEnd();
 }
@@ -35,6 +44,11 @@ class OverscrollStandartHandler extends OverscrollHandler {
   @override
   onOverscrollTop(double overscroll) {
     var y = overscroll * 0.1;
+    if (change + y <= 0) {
+      overscrollingTopStop();
+      controller.moveY(y);
+      return;
+    }
     change += y;
     controller.changeY += y;
 
@@ -60,7 +74,11 @@ class OverscrollStandartHandler extends OverscrollHandler {
   @override
   onOverscrollBottom(double overscroll) {
     var y = overscroll * 0.1;
-
+    if (change + y <= 0) {
+      overscrollingBottomStop();
+      controller.moveY(y);
+      return;
+    }
     change -= y;
     controller.changeY -= y;
 
@@ -76,5 +94,15 @@ class OverscrollStandartHandler extends OverscrollHandler {
       item.moveY(controller.context, change, animated: false);
     }
     change = 0.0;
+  }
+
+  @override
+  onOverscrollBottomStart() {
+    controller.lastItem.resetValues(controller.context);
+  }
+
+  @override
+  onOverscrollTopStart() {
+    controller.firstItem.resetValues(controller.context);
   }
 }

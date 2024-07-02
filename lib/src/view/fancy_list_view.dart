@@ -54,7 +54,6 @@ class FancyListViewState extends State<FancyListView> {
   double get height => widget.height;
   double get itemHeight => widget.itemHeight;
 
-  final ValueNotifier<double> _y = ValueNotifier(0.0);
   final ValueNotifier<bool> _dragging = ValueNotifier(false);
 
   Clip? get clipBehavior => widget.clipBehavior;

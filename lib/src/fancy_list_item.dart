@@ -64,19 +64,23 @@ class FancyListItem extends StatelessWidget {
   double progress = 0.0;
 
   moveY(BuildContext context, double y, {bool animated = true}) {
-    if (isLastItem) {
-      print(futureEndTillEnd(y));
-    }
+    var futureStartTillStart = this.futureStartTillStart(y);
+    var futureEndTillEnd = this.futureEndTillEnd(y);
+    // if (futureStartTillStart >= 0) {
+    //   fancyListController.overscrollHandler.overscrollingTopStop();
+    // } else if (futureEndTillEnd >= 0) {
+    //   fancyListController.overscrollHandler.overscrollingBottomStop();
+    // }
     if (animated == false) {
       changeY.value += y;
       print("not animated");
       return;
     }
-    if (isFirstItem && futureStartTillStart(y) > 0) {
+    if (isFirstItem && futureStartTillStart > 0) {
       fancyListController.overscrollHandler.overscrollingTop();
       return;
     }
-    if (isLastItem && futureEndTillEnd(y) > 0) {
+    if (isLastItem && futureEndTillEnd > 0) {
       fancyListController.overscrollHandler.overscrollingBottom();
 
       return;
