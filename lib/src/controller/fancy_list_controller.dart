@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:advanced_change_notifier/advanced_change_notifier.dart';
 import 'package:fancy_list_view/main.dart';
@@ -12,13 +13,15 @@ import 'package:fancy_list_view/src/view/view_stack.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+enum DragDirection { up, down }
+
 class FancyListController
     with
         ListWidgetChangeNotifier<FancyListItem>,
         FancyListControllerItemsMixin {
   FancyListController._internal({OverscrollHandler? overscrollHandler}) {
     this.overscrollHandler =
-        overscrollHandler ?? OverscrollStandartHandler(controller: this);
+        overscrollHandler ?? PlainOverscroll(controller: this);
   }
 
   static FancyListController? _instance;
@@ -29,7 +32,7 @@ class FancyListController
     return _instance!;
   }
   late final OverscrollHandler overscrollHandler;
-
+  ValueNotifier<bool> dragging = ValueNotifier(false);
   double listContentHeight = 0.0;
   double listHeight = .0;
   late FancyListView view;
@@ -43,27 +46,28 @@ class FancyListController
   overscrolling() => isOverscrolling = true;
   notOverscrolling() => isOverscrolling = true;
 
-  FancyListItem mockItem(int index) => (() => FancyListItem(
-      Text(Random().nextDouble().toString()),
-      animateOnEnter: true,
-      isLastItem: index == items.length - 1,
-      index: index,
-      fancyListController: this,
-      onEnter: AnimationStop(
-        key: const Key("onEnter"),
-        x: (context) => 0.0,
-        scale: (c, progress) => 1.0,
-      ),
-      onLeave: AnimationStop(
-        key: const Key("onLeave"),
-        x: (context) => MediaQuery.sizeOf(context).width,
-        scale: (c, progress) => 1.0,
-      ),
-      dragging: false,
-      listHeight: listHeight,
-      height: itemHeight,
-      initialChangeY: changeY,
-      y: (index == 0 ? index * (itemHeight) : index * (itemHeight + gap))))();
+  FancyListItem mockItem(
+    int index,
+  ) =>
+      FancyListItem(Text(Random().nextDouble().toString()),
+          animateOnEnter: true,
+          isLastItem: index == items.length - 1,
+          index: index,
+          fancyListController: this,
+          onEnter: AnimationStop(
+            key: const Key("onEnter"),
+            x: (context) => 0.0,
+            scale: (c, progress) => 1.0,
+          ),
+          onLeave: AnimationStop(
+            key: const Key("onLeave"),
+            x: (context) => MediaQuery.sizeOf(context).width,
+            scale: (c, progress) => 1.0,
+          ),
+          listHeight: listHeight,
+          height: itemHeight,
+          initialChangeY: changeY,
+          y: (index == 0 ? index * (itemHeight) : index * (itemHeight + gap)));
 
   scrollTo(int index) {
     var item = items
@@ -72,9 +76,9 @@ class FancyListController
         )
         .first;
     if (index == 0) {
-      setY(-(item.baseY.value));
+      setY(-(item.movementHandler.baseY.value));
     } else {
-      setY(-(item.baseY.value - item.height));
+      setY(-(item.movementHandler.baseY.value - item.height));
     }
   }
 
@@ -83,14 +87,14 @@ class FancyListController
   }
 
   scrollToEnd() {
-    setY(-lastItem.endTillEnd);
+    setY(-lastItem.movementHandler.endTillEnd);
   }
 
   void insert(Widget item) {
     var newItem = mockItem(0);
     for (var current in items) {
       current.increaseIndex();
-      current.baseY.value += newItem.height + gap;
+      current.movementHandler.baseY.value += newItem.height + gap;
     }
     items.add(newItem);
 
@@ -108,7 +112,7 @@ class FancyListController
       (element) => element.index >= index,
     )) {
       current.increaseIndex();
-      current.baseY.value += newItem.height + gap;
+      current.movementHandler.baseY.value += newItem.height + gap;
     }
     items.add(newItem);
 
@@ -125,11 +129,11 @@ class FancyListController
       return;
     }
     scrollTo(index);
-    toRemove.leave(context);
+    toRemove.movementHandler.leave(context);
 
     super.removeAt(index);
     for (var item in itemsUpwards(index - 1)) {
-      item.baseY.value -= toRemove.height + gap;
+      item.movementHandler.baseY.value -= toRemove.height + gap;
     }
 
     notifyRemoveListeners(index);
@@ -139,26 +143,41 @@ class FancyListController
     var items =
         this.items.getRange(from ?? 0, this.items.length).toList().reversed;
     for (var item in items) {
-      item.baseY.value += y;
+      item.movementHandler.baseY.value += y;
       // print("moving ${item.key} - ${item.onScreen()}");
     }
   }
 
-  void moveY(double y) {
+  void moveY(
+    double y,
+  ) {
     if (overscrollHandler.isOverscrollingTop) {
       overscrollHandler.onOverscrollTop(y);
+      print("overscrolling top");
       return;
-    }
-    if (overscrollHandler.isOverscrollingBottom) {
+    } else if (overscrollHandler.isOverscrollingBottom) {
       print("overscrolling bottom");
 
       overscrollHandler.onOverscrollBottom(y);
       return;
-    }
-    changeY += y;
-    for (var item in items) {
-      item.moveY(context, y);
-      print("moving ${item.index} - ${item.onScreen()}");
+    } else {
+      changeY += y;
+      final direction = y > 0 ? DragDirection.down : DragDirection.up;
+      if (direction == DragDirection.up) {
+        for (var item in items.reversed) {
+          if (!item.moveY(context, y, animated: false)) {
+            break;
+          }
+          // print("moving ${item.index} - ${item.onScreen()}");
+        }
+      } else if (direction == DragDirection.down) {
+        for (var item in items) {
+          if (!item.moveY(context, y, animated: false)) {
+            break;
+          }
+          // print("moving ${item.index} - ${item.onScreen()}");
+        }
+      }
     }
   }
 
@@ -170,10 +189,12 @@ class FancyListController
       overscrollHandler.overscrollingBottomStop();
       return;
     }
+    print("move end");
     for (var item in items) {
       item.moveYEnd(context);
       // print("moving ${item.key} - ${item.onScreen()}");
     }
+    dragging.value = false;
   }
 
   Items onInit(FancyListView view, GlobalKey<FancyListStackState> globalKey,
@@ -206,8 +227,6 @@ class FancyListController
         ),
         listHeight: height,
         height: itemHeight,
-        // key: Key(index.toString()),
-        dragging: false,
         y: (index == 0 ? index * (itemHeight) : index * (itemHeight + gap)),
       );
       index++;

@@ -54,8 +54,6 @@ class FancyListViewState extends State<FancyListView> {
   double get height => widget.height;
   double get itemHeight => widget.itemHeight;
 
-  final ValueNotifier<bool> _dragging = ValueNotifier(false);
-
   Clip? get clipBehavior => widget.clipBehavior;
   BoxDecoration? get decoration => widget.decoration;
 
@@ -66,15 +64,14 @@ class FancyListViewState extends State<FancyListView> {
         clipBehavior: clipBehavior ?? Clip.none,
         decoration: decoration ?? const BoxDecoration(),
         child: GestureDetector(
-            onVerticalDragStart: (details) => (d) => _dragging.value = true,
+            onVerticalDragStart: (details) =>
+                (d) => FancyListController().dragging.value = true,
             onVerticalDragUpdate: (details) {
               controller.moveY(details.delta.dy);
             },
             onVerticalDragEnd: (details) {
               controller.endY();
             },
-            child: ValueListenableBuilder(
-                valueListenable: _dragging,
-                builder: (context, dragging, c) => FancyListStack(widget))));
+            child: FancyListStack(widget)));
   }
 }
