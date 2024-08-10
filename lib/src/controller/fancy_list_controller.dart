@@ -5,7 +5,8 @@ import 'package:advanced_change_notifier/advanced_change_notifier.dart';
 import 'package:fancy_list_view/main.dart';
 import 'package:fancy_list_view/src/animation_stop.dart';
 import 'package:fancy_list_view/src/controller/controller_items_mixin.dart';
-import 'package:fancy_list_view/src/controller/limit/limit_interface.dart';
+import 'package:fancy_list_view/src/controller/overscroll_handler/elastic_overscroll.dart';
+import 'package:fancy_list_view/src/controller/overscroll_handler/overscroll_handler.dart';
 import 'package:fancy_list_view/src/controller/types.dart';
 import 'package:fancy_list_view/src/fancy_list_item.dart';
 import 'package:fancy_list_view/src/list_widget_change_notifier/list_widget_change_notifier.dart';
@@ -21,7 +22,7 @@ class FancyListController
         FancyListControllerItemsMixin {
   FancyListController._internal({OverscrollHandler? overscrollHandler}) {
     this.overscrollHandler =
-        overscrollHandler ?? PlainOverscroll(controller: this);
+        overscrollHandler ?? NoOverscroll(controller: this);
   }
 
   static FancyListController? _instance;
@@ -40,11 +41,6 @@ class FancyListController
   double changeY = 0.0;
   GlobalKey<FancyListStackState>? globalKey;
   BuildContext get context => globalKey!.currentState!.context;
-
-  bool isOverscrolling = false;
-
-  overscrolling() => isOverscrolling = true;
-  notOverscrolling() => isOverscrolling = true;
 
   FancyListItem mockItem(
     int index,
@@ -165,14 +161,20 @@ class FancyListController
       final direction = y > 0 ? DragDirection.down : DragDirection.up;
       if (direction == DragDirection.up) {
         for (var item in items.reversed) {
-          if (!item.moveY(context, y, animated: false)) {
+          if (!item.moveY(
+            context,
+            y,
+          )) {
             break;
           }
           // print("moving ${item.index} - ${item.onScreen()}");
         }
       } else if (direction == DragDirection.down) {
         for (var item in items) {
-          if (!item.moveY(context, y, animated: false)) {
+          if (!item.moveY(
+            context,
+            y,
+          )) {
             break;
           }
           // print("moving ${item.index} - ${item.onScreen()}");
@@ -189,12 +191,30 @@ class FancyListController
       overscrollHandler.overscrollingBottomStop();
       return;
     }
+    dragging.value = false;
     print("move end");
+
     for (var item in items) {
+      if (snapType == SnapType.start) {
+        final bool unleftItem = item.movementHandler.startOverStart &&
+            !item.movementHandler.endOverStart;
+        if (unleftItem) {
+          if (item.movementHandler.leftStart) {
+            print("start left ${item.movementHandler.endTillStart}");
+
+            moveY(-item.movementHandler.endTillStart);
+          } else {
+            print("start not left ${item.movementHandler.startTillStart}");
+            moveY(item.movementHandler.startTillStart.abs());
+            return;
+          }
+        } else {
+          print("no unleft item");
+        }
+      }
       item.moveYEnd(context);
       // print("moving ${item.key} - ${item.onScreen()}");
     }
-    dragging.value = false;
   }
 
   Items onInit(FancyListView view, GlobalKey<FancyListStackState> globalKey,
@@ -243,7 +263,7 @@ class FancyListController
   setY(double y) {
     changeY = y;
     for (var item in items) {
-      item.moveY(context, item.changeY.value - changeY);
+      item.moveY(context, item.movementHandler.changeY.value - changeY);
     }
   }
 
@@ -256,4 +276,6 @@ class FancyListController
         (element) => element.isFirstItem,
       )
       .first;
+
+  SnapType get snapType => view.snapType;
 }

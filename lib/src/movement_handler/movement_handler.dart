@@ -6,16 +6,17 @@ import 'package:fancy_list_view/src/controller/fancy_list_controller.dart';
 import 'package:flutter/material.dart';
 
 abstract class MovementHandler {
-  MovementHandler(
-      {required this.listHeight,
-      required this.height,
-      required double baseY,
-      required this.index,
-      required this.isLastItem,
-      this.animateOnEnter = false,
-      this.onEnter,
-      this.onLeave})
-      : baseY = ValueNotifier(baseY);
+  MovementHandler({
+    required this.listHeight,
+    required this.height,
+    required double baseY,
+    required this.index,
+    required this.isLastItem,
+    required this.changeY,
+    this.animateOnEnter = false,
+    this.onEnter,
+    this.onLeave,
+  }) : baseY = ValueNotifier(baseY);
   AnimationStop? onEnter;
   AnimationStop? onLeave;
   bool animateOnEnter;
@@ -26,7 +27,7 @@ abstract class MovementHandler {
   int index;
 
   final ValueNotifier<double> baseY;
-
+  final ValueNotifier<double> changeY;
   bool moveY(BuildContext context, double y, {bool animated = true});
   setY(BuildContext context, double y);
 
@@ -68,7 +69,7 @@ abstract class MovementHandler {
   double futureEndTillEnd(double withY) => listHeight - (y + height + withY);
   double futureStartTillStart(double withY) => startY + withY;
   final FancyListController fancyListController = FancyListController();
-  final ValueNotifier<double> changeY = ValueNotifier(0.0);
+
   final Color color =
       Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
 

@@ -10,6 +10,7 @@ class EventMovementHandler extends MovementHandler {
     required super.baseY,
     required super.index,
     required super.isLastItem,
+    required super.changeY,
     super.animateOnEnter,
     super.onEnter,
     super.onLeave,
@@ -78,9 +79,14 @@ class EventMovementHandler extends MovementHandler {
         return false;
       }
     }
+
     if (!leftEnd) {
       if (endTillEnd < -height * percentage) {
         leftEnd = true;
+        if (!animated) {
+          changeY.value += y;
+          return true;
+        }
         x.value = onLeave?.x(context) ?? 0;
         scale.value = onLeave?.scale(context, 0.0) ?? 1;
       }
@@ -88,6 +94,14 @@ class EventMovementHandler extends MovementHandler {
     if (!leftStart) {
       if (startTillStart < -height * percentage) {
         leftStart = true;
+        if (!animated) {
+          changeY.value += y;
+          return true;
+        }
+        if (!animated) {
+          changeY.value += y;
+          return true;
+        }
         x.value = onLeave?.x(context) ?? 0;
         scale.value = onLeave?.scale(context, 0.0) ?? 1;
       }
@@ -95,6 +109,10 @@ class EventMovementHandler extends MovementHandler {
     if (leftEnd) {
       if (endTillEnd >= -height * percentage) {
         leftEnd = false;
+        if (!animated) {
+          changeY.value += y;
+          return true;
+        }
         x.value = onEnter?.x(context) ?? 0;
         scale.value = onEnter?.scale(context, 0.0) ?? 1;
       }
@@ -102,6 +120,10 @@ class EventMovementHandler extends MovementHandler {
     if (leftStart) {
       if (startTillStart >= -height * percentage) {
         leftStart = false;
+        if (!animated) {
+          changeY.value += y;
+          return true;
+        }
         x.value = onEnter?.x(context) ?? 0;
         scale.value = onEnter?.scale(context, 0.0) ?? 1;
       }

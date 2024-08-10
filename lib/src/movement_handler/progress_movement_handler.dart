@@ -9,6 +9,7 @@ class ProgressMovementHandler extends MovementHandler {
       required super.baseY,
       required super.index,
       required super.isLastItem,
+      required super.changeY,
       super.animateOnEnter,
       super.onEnter,
       super.onLeave});

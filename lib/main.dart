@@ -73,19 +73,42 @@ class _MyHomePageState extends State<MyHomePage> {
     final FancyListController controller = FancyListController();
 
     return Scaffold(
-      body: Column(children: [
-        FancyListView(
-            controller: controller,
-            clipBehavior: Clip.antiAlias,
-            height: MediaQuery.sizeOf(context).height,
-            itemHeight: 155,
-            children: [1, 2, 3, 4, 5, 7, 8, 9]
-                .map((e) => Container(
-                      color: Color((Random().nextDouble() * 0xFFFFFF).toInt())
-                          .withOpacity(1.0),
-                    ))
-                .toList())
-      ]),
-    );
+        body: Container(
+            clipBehavior: Clip.none,
+            padding: EdgeInsets.all(35),
+            decoration: BoxDecoration(color: Colors.grey, boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 10,
+                  spreadRadius: 5)
+            ]),
+            alignment: Alignment.center,
+            child: FancyListView(
+                padding: EdgeInsets.all(15),
+                controller: controller,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                height: MediaQuery.sizeOf(context).height - 110,
+                itemHeight: 155,
+                children: [1, 2, 3, 4, 5, 7, 8, 9].map((e) {
+                  final color =
+                      Color((Random().nextDouble() * 0xFFFFFF).toInt())
+                          .withOpacity(1.0);
+                  return Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withOpacity(0.35),
+                          blurRadius: 21,
+                        )
+                      ],
+                      color: color.withOpacity(1.0),
+                    ),
+                  );
+                }).toList())));
   }
 }

@@ -24,7 +24,7 @@ class FancyListStackState extends State<FancyListStack> {
     super.initState();
 
     items = widget.view.controller
-        .onInit(widget.view, widget.key, widget.view.height);
+        .onInit(widget.view, widget.key, widget.view.height.value);
     controller.createOnAddListener(
       (value) async {
         print("new item: $value: {height: ${value?.height}, y: ${value?.y}}");
@@ -49,6 +49,6 @@ class FancyListStackState extends State<FancyListStack> {
   FancyListController get controller => widget.view.controller;
   @override
   Widget build(BuildContext context) {
-    return Stack(children: items!);
+    return Stack(alignment: Alignment.topCenter, children: items!);
   }
 }

@@ -27,9 +27,9 @@ class FancyListItem extends StatelessWidget {
       bool? animateOnTrigger})
       : animateOnEnter = animateOnEnter ?? false,
         animateOnTrigger = animateOnTrigger ?? false,
-        changeY = ValueNotifier(initialChangeY ?? 0.0),
         movementHandler = movementHandler ??
             EventMovementHandler(
+                changeY: ValueNotifier(initialChangeY ?? 0.0),
                 onEnter: onEnter,
                 onLeave: onLeave,
                 animateOnEnter: animateOnEnter ?? false,
@@ -67,8 +67,8 @@ class FancyListItem extends StatelessWidget {
   final double listHeight;
   final double height;
 
+
   final FancyListController fancyListController;
-  final ValueNotifier<double> changeY;
   final Color color =
       Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
 

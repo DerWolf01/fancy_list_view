@@ -26,23 +26,28 @@ import 'package:flutter/material.dart';
 class FancyListView extends StatefulWidget {
   FancyListView(
       {required this.children,
-      required this.height,
+      required double height,
       required this.itemHeight,
       FancyListController? controller,
       this.clipBehavior,
       this.decoration,
+      this.padding,
+      SnapType? snapType,
       super.key})
-      : controller = controller ?? FancyListController();
+      : controller = controller ?? FancyListController(),
+        height = ValueNotifier(height),
+        snapType = snapType ?? SnapType.start;
 
   final List<Widget> children;
   final double gap = 15.0;
   final FancyListController controller;
-  final double height;
+  final ValueNotifier<double> height;
   final double itemHeight;
 
   final Clip? clipBehavior;
   final BoxDecoration? decoration;
-
+  final EdgeInsets? padding;
+  final SnapType snapType;
   @override
   State<StatefulWidget> createState() => FancyListViewState();
 }
@@ -51,7 +56,7 @@ class FancyListViewState extends State<FancyListView> {
   List<Widget> get children => widget.children;
   double get gap => widget.gap;
   FancyListController get controller => widget.controller;
-  double get height => widget.height;
+
   double get itemHeight => widget.itemHeight;
 
   Clip? get clipBehavior => widget.clipBehavior;
@@ -59,19 +64,25 @@ class FancyListViewState extends State<FancyListView> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        height: height,
-        clipBehavior: clipBehavior ?? Clip.none,
-        decoration: decoration ?? const BoxDecoration(),
-        child: GestureDetector(
-            onVerticalDragStart: (details) =>
-                (d) => FancyListController().dragging.value = true,
-            onVerticalDragUpdate: (details) {
-              controller.moveY(details.delta.dy);
-            },
-            onVerticalDragEnd: (details) {
-              controller.endY();
-            },
-            child: FancyListStack(widget)));
+    return ValueListenableBuilder(
+        valueListenable: widget.height,
+        builder: (context, value, _) => AnimatedContainer(
+            padding: widget.padding,
+            duration: Duration(milliseconds: 301),
+            height: value,
+            clipBehavior: clipBehavior ?? Clip.none,
+            decoration: decoration ?? const BoxDecoration(),
+            child: GestureDetector(
+                onVerticalDragStart: (details) =>
+                    (d) => FancyListController().dragging.value = true,
+                onVerticalDragUpdate: (details) {
+                  controller.moveY(details.delta.dy);
+                },
+                onVerticalDragEnd: (details) {
+                  controller.endY();
+                },
+                child: FancyListStack(widget))));
   }
 }
+
+enum SnapType { start, end, none }
